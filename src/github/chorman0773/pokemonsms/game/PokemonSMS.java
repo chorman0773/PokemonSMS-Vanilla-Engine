@@ -2,22 +2,23 @@ package github.chorman0773.pokemonsms.game;
 
 import java.awt.Graphics;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import github.chorman0773.pokemonsms.core.InitRegistries;
+import github.chorman0773.pokemonsms.internal.SystemInterface;
 import github.chorman0773.sentry.annotation.Game;
 import github.chorman0773.sentry.generic.GenericGame;
 
 @Game(gameId = "pokemonsms", gameName = "PokemonSMS", gameVersion = "1.0", serialId = -6093277751799286295L, uuid = "f008f340-bff6-11e8-a355-529269fb1459")
-public final class PokemonSMS extends GenericGame {
+public final class PokemonSMS extends GenericGame implements SystemInterface {
 
 	private List<Runnable> tickables = new ArrayList<>();
 	private List<Consumer<Graphics>> renderables = new ArrayList<>();
 	private Object runLock = new Object();
 	private Object renderLock = new Object();
-	private boolean running;
-	private boolean drawing;
 	private Options opts;
 	private static final long serialVersionUID = -6093277751799286295L;
 
@@ -27,6 +28,7 @@ public final class PokemonSMS extends GenericGame {
 	}
 	protected void doInit() throws IOException {
 		opts = new Options(this.getDirectory());
+		InitRegistries.init();
 	}
 	protected void destroyGame() throws IOException{
 		opts.close();
@@ -45,13 +47,17 @@ public final class PokemonSMS extends GenericGame {
 	@Override
 	public void tick() {
 		synchronized(runLock) {
-			
+			for(Runnable t:tickables)
+				t.run();
 		}
 	}
 
 	@Override
 	public void render(Graphics g) {
-		// TODO Auto-generated method stub
+		synchronized(renderLock) {
+			for(Consumer<Graphics> c:renderables)
+				c.accept(g);
+		}
 
 	}
 
@@ -65,6 +71,11 @@ public final class PokemonSMS extends GenericGame {
 	public void start() {
 		// TODO Auto-generated method stub
 
+	}
+	@Override
+	public Path getRootDir() {
+		// TODO Auto-generated method stub
+		return this.getDirectory();
 	}
 
 }

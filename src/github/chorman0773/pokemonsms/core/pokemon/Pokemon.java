@@ -4,16 +4,16 @@ import java.time.Instant;
 
 import github.chorman0773.pokemonsms.core.EnumStat;
 import github.chorman0773.pokemonsms.core.EnumStatus;
+import github.chorman0773.pokemonsms.core.EventBus;
 import github.chorman0773.pokemonsms.core.Registry.Registries;
-import github.chorman0773.pokemonsms.core.bindings.Delegable;
-import github.chorman0773.pokemonsms.core.bindings.Delegate;
+import github.chorman0773.pokemonsms.lua.Delegable;
+import github.chorman0773.pokemonsms.lua.Delegate;
 import github.chorman0773.sentry.save.NBTSerializable;
-import github.chorman0773.sentry.save.nbt.NBTTagByteArray;
 import github.chorman0773.sentry.save.nbt.NBTTagCompound;
-import github.chorman0773.sentry.save.nbt.NBTTagIntArray;
+import github.chorman0773.sentry.save.nbt.NBTTagList;
 import github.chorman0773.sentry.text.TextComponent;
 
-public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
+public class Pokemon implements Delegable<Pokemon>, NBTSerializable, EventBus {
 	private Species spec;
 	private Ability ability;
 	private long identity;
@@ -36,6 +36,17 @@ public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
 	private int currentHP;
 	private EnumStatus status;
 	private int level;
+	private ItemStack heldItem;
+	
+	private final PokemonDelegate delegate = new PokemonDelegate(this);
+	private static class PokemonDelegate extends Delegate<Pokemon>{
+
+		public PokemonDelegate(Pokemon obj) {
+			super(obj);
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
 	
 	public static int FALT = 0x01, FSHADOW = 0x02, FSUPER = 0x80,
 			FABILITY_2 = 0x10, FHIDDEN = 0x20, FGENDER = 0x40;
@@ -66,15 +77,28 @@ public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
 			return 1.0;
 		}
 	}
+	private static class MoveInfoDelegate extends Delegate<MoveInfo>{
+
+		public MoveInfoDelegate(MoveInfo obj) {
+			super(obj);
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
 	
 	public static class MoveInfo implements Delegable<MoveInfo>,NBTSerializable{
 		private Move target;
 		private int remainingPP;
 		private int ppUpsUsed;
+		private final MoveInfoDelegate delegate = new MoveInfoDelegate(this);
 		public MoveInfo() {
 			target = Registries.moves.get("pokemon:null");
 			remainingPP = 0;
 			ppUpsUsed = 0;
+		}
+		public MoveInfo(Move m) {
+			target = m;
+			remainingPP = m.getBasePP();
 		}
 		@Override
 		public void writeNBT(NBTTagCompound comp) {
@@ -117,12 +141,12 @@ public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
 		@Override
 		public Delegate<MoveInfo> getDelegate() {
 			// TODO Auto-generated method stub
-			return null;
+			return delegate;
 		}
 		
 	}
 	public Pokemon() {
-		// TODO Auto-generated constructor stub
+		
 	}
 
 	@Override
@@ -130,9 +154,9 @@ public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
 		comp.setString("species", spec.getRegistryName().toString());
 		comp.setString("ability", ability.getRegistryName().toString());
 		comp.setString("status", status.name());
+		comp.setInt("Level", level);
 		
 		NBTTagCompound stats = comp.getTagCompound("Stats");
-		stats.setIntArray("Current", this.stats);
 		stats.setByteArray("Ivs", ivs);
 		stats.setByteArray("Evs", evs);
 		stats.setInt("CurrentHP", currentHP);
@@ -150,6 +174,11 @@ public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
 		indiv.setByte("CryPitchModifier", (byte)cryPitchModifier);
 		indiv.setByteArray("StatGrowthModifiers", growthModifiers);
 		indiv.setByte("ExpGrowthModifier",(byte)this.expGrowthModifier);
+		indiv.setString("Nature", nature.toString());
+		NBTTagList list = comp.getList("Moves");
+		for(int i =0;i<moves.length&&moves[i]!=null;i++)
+			list.add(moves[i].serializeNBT());
+		comp.setTag("HeldItem",heldItem.serializeNBT());
 	}
 
 	@Override
@@ -161,7 +190,7 @@ public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
 	@Override
 	public Delegate<Pokemon> getDelegate() {
 		// TODO Auto-generated method stub
-		return null;
+		return delegate;
 	}
 	
 	public void recalculateStats() {
@@ -183,5 +212,15 @@ public class Pokemon implements Delegable<Pokemon>, NBTSerializable {
 	}
 	public int getHPValue() {
 		return currentHP;
+	}
+	public ItemStack getHeldItem() {
+		return heldItem;
+	}
+
+	@Override
+	public void raise(int key, Object... parameters) {
+		spec.getEventBus().raise(key,parameters);
+		ability.getEventBus().raise(key, parameters);
+		heldItem.raise(key, parameters);
 	}
 }

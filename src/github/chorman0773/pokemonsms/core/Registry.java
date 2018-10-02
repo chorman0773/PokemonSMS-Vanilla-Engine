@@ -6,8 +6,10 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import github.chorman0773.pokemonsms.core.pokemon.Ability;
+import github.chorman0773.pokemonsms.core.pokemon.Item;
 import github.chorman0773.pokemonsms.core.pokemon.Move;
 import github.chorman0773.pokemonsms.core.pokemon.Species;
+import github.chorman0773.pokemonsms.siding.EnumSide;
 
 public class Registry<T extends IRegistryEntry<T>> {
 	public static interface Reserved{
@@ -17,6 +19,15 @@ public class Registry<T extends IRegistryEntry<T>> {
 		public static Registry<Ability> abilities = new Registry<>();
 		public static Registry<Move> moves = new Registry<>();
 		public static Registry<Species> species = new Registry<>();
+		public static Registry<Item> items = new Registry<>();
+	}
+	private static <T extends IRegistryEntry<T>> Registry<T> clientGuardNewRegistry(){
+		if(!EnumSide.isClient())
+			throw new IllegalStateException("Cannot initialize ClientRegistries except on the Client");
+		return new Registry<>();
+	}
+	public static interface ClientRegistries{
+		
 	}
 	private Map<ResourceLocation,T> map = new TreeMap<>();
 	public Registry() {

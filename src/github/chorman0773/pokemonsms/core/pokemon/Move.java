@@ -25,7 +25,7 @@ public class Move extends NamedRegistryEntry<Move> {
 	private int pp;
 	private Set<String> tags;
 	
-	private static String[] tagListToArray(LuaTable t) {
+	static String[] tagListToArray(LuaTable t) {
 		String[] ret =new String[t.length()];
 		for(int i=0;i<ret.length;i++)
 			ret[i] = t.get(i+1).checkjstring();
@@ -46,7 +46,7 @@ public class Move extends NamedRegistryEntry<Move> {
 	}
 	
 	public Move(LuaValue val) {
-		this(val,(EnumType)CoerceLuaToJava.coerce(val.get("type"), EnumType.class),(EnumAttackCategory)CoerceLuaToJava.coerce(val.get("category"), EnumAttackCategory.class),fromValue(val.get("description")),val.get("hasSecondaryEffects").checkboolean(),val.get("power").checkint(),val.get("accuracy").checkdouble(),new LuaEventBus(val.get("eventBus")),tagListToArray(val.get("tags").checktable()),val.get("pp").checkint());
+		this(val,(EnumType)CoerceLuaToJava.coerce(val.get("type"), EnumType.class),(EnumAttackCategory)CoerceLuaToJava.coerce(val.get("category"), EnumAttackCategory.class),fromValue(val.get("description")),val.get("hasSecondaryEffects").checkboolean(),val.get("power").checkint(),val.get("accuracy").checkdouble(),new LuaEventBus(val.get("eventBus")),tagListToArray(val.get("traits").checktable()),val.get("pp").checkint());
 		// TODO Auto-generated constructor stub
 	}
 
@@ -78,5 +78,15 @@ public class Move extends NamedRegistryEntry<Move> {
 		return (int)(pp*((5+ppUps)/5.0f));
 	}
 	
+	public boolean hasTrait(String tag) {
+		return tags.contains(tag);
+	}
 
+	public int getPower() {
+		// TODO Auto-generated method stub
+		return power;
+	}
+	public double getAccuracy() {
+		return accuracy;
+	}
 }

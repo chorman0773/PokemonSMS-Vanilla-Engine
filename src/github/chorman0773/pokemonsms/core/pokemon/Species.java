@@ -8,9 +8,9 @@ import github.chorman0773.pokemonsms.core.EnumType;
 import github.chorman0773.pokemonsms.core.EventBus;
 import github.chorman0773.pokemonsms.core.LuaEventBus;
 import github.chorman0773.pokemonsms.core.NamedRegistryEntry;
-import github.chorman0773.pokemonsms.core.bindings.Delegable;
-import github.chorman0773.pokemonsms.core.bindings.Delegate;
-import github.chorman0773.pokemonsms.core.bindings.EnumValue;
+import github.chorman0773.pokemonsms.lua.Delegable;
+import github.chorman0773.pokemonsms.lua.Delegate;
+import github.chorman0773.pokemonsms.lua.EnumValue;
 
 public class Species extends NamedRegistryEntry<Species> implements Delegable<Species> {
 	public static class PokemonDelegate extends Delegate<Species>{
@@ -96,6 +96,10 @@ public class Species extends NamedRegistryEntry<Species> implements Delegable<Sp
 	}
 	public int getBaseStat(int form,EnumStat stat) {
 		return inf.getBaseStat.call(this.getValue(),LuaInteger.valueOf(form),EnumValue.of(stat)).checkint();
+	}
+	public EventBus getEventBus() {
+		// TODO Auto-generated method stub
+		return bus;
 	}
 
 }

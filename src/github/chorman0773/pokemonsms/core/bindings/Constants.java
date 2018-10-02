@@ -8,6 +8,7 @@ import github.chorman0773.pokemonsms.core.EnumAttackCategory;
 import github.chorman0773.pokemonsms.core.EnumStat;
 import github.chorman0773.pokemonsms.core.EnumStatus;
 import github.chorman0773.pokemonsms.core.EnumType;
+import github.chorman0773.pokemonsms.lua.EnumValue;
 
 public class Constants extends TwoArgFunction {
 	public static class Stats extends LuaUserdata{
